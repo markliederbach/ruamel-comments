@@ -1,0 +1,49 @@
+version: "2"
+
+vars:
+  VENV_NAME:
+    sh: cat .python-version | sed 's/^.*\///g'
+  PYTHON_VERSION:
+    sh: cat .python-version | sed 's/\/.*//g'
+  REQ_FILE: requirements.txt
+
+tasks:
+  deps:
+    desc: Create a virtualenv and install dependencies
+    cmds:
+      - task: pyenv-version
+      - task: delete-existing-venv
+      - task: unlink-existing-venv
+      - task: create-venv
+  
+  pyenv-version:
+    desc: install required pyenv version
+    cmds:
+      - pyenv install --skip-existing {{.PYTHON_VERSION}}
+    preconditions:
+      - sh: "pyenv --version"
+        msg: "Must install pyenv first! Run `brew install pyenv` and add it to your profile."
+  
+  delete-existing-venv:
+    desc: Remove any existing project venv if found
+    cmds:
+      - pyenv virtualenv-delete -f {{.VENV_NAME}}
+    status:
+      - test ! -d $(pyenv root)/versions/{{.PYTHON_VERSION}}/envs/{{.VENV_NAME}}
+  
+  unlink-existing-venv:
+    desc: Remove symlink to .venv if found
+    cmds:
+      - unlink .venv
+    status:
+      - test ! -L .venv
+  
+  create-venv:
+    desc: Create virtualenv using pyenv-virtualenv and install packages
+    cmds:
+      - pyenv virtualenv {{.PYTHON_VERSION}} {{.VENV_NAME}}
+      - ln -s $(pyenv root)/versions/{{.PYTHON_VERSION}}/envs/{{.VENV_NAME}} .venv
+      - pip install -r {{.REQ_FILE}}
+    preconditions:
+      - sh: "pyenv virtualenv --version"
+        msg: "Must install pyenv-virtualenv first! Run `brew install pyenv-virtualenv` and add it to your profile."
