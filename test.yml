@@ -1,0 +1,18 @@
+# C1
+key1: v1
+key2:
+  # C2
+  #C3
+  - v2
+  - v3 # C4
+  - v4
+  # C5
+key3: # C6
+  subkey1: v5
+  # C7
+  subkey2: v6 # C8
+
+# C9
+# C10
+key4: v7 # C11
+#C12
